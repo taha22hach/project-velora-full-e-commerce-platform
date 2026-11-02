@@ -1,0 +1,7 @@
+import type { Metadata } from "next";
+import Link from "next/link";
+import { ArrowLeft, Heart, Sparkles, Sun } from "lucide-react";
+export const metadata: Metadata = { title: "قصتنا" };
+export default function AboutPage() {
+  return <main className="about-page"><section className="about-hero"><div className="page-wrap"><span className="eyebrow">حكاية VELORA</span><h1>الجمال ليس قالباً،<br /><em>إنه إحساسكِ بنفسك.</em></h1><p>بدأت VELORA من فكرة بسيطة: اختيارات أجمل، وتجربة تسوق أقرب إليك.</p></div></section><section className="page-wrap about-story"><div className="about-photo" role="img" aria-label="اختيارات VELORA للعناية والجمال" /><div><span className="eyebrow">اختيارات لها معنى</span><h2>مساحة لكل تفصيلة<br />تشبهكِ.</h2><p>نجمع في VELORA منتجات العناية والجمال والأزياء والإكسسوارات في مكان واحد، لنقرّب إليكِ اختيارات تحبينها وتناسب تفاصيل يومك.</p><p>نؤمن أن الرفاهية في الشعور بالثقة والراحة. لذلك نصمم تجربة سهلة وواضحة، ونختار تشكيلتنا بعناية لتناسب أذواقاً واحتياجات مختلفة.</p><Link className="button button-primary" href="/shop">اكتشفي VELORA <ArrowLeft size={16} /></Link></div></section><section className="about-values page-wrap"><div><Heart /><h3>نختار بقلب</h3><p>منتجات وتجارب تم اختيارها بعناية واهتمام.</p></div><div><Sparkles /><h3>تفاصيل أجمل</h3><p>لمسات بسيطة تجعل لحظتك اليومية مميزة.</p></div><div><Sun /><h3>لكل أسلوب</h3><p>مساحة رحبة تعبّر عنك كما أنتِ.</p></div></section></main>;
+}

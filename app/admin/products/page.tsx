@@ -1,0 +1,18 @@
+import { requireAdmin } from "@/lib/auth";
+import { formatPrice } from "@/lib/data";
+import { AdminProductForm } from "@/components/admin-product-form";
+import { AdminProductActions } from "@/components/admin-product-actions";
+import type { AdminProductRow, WholesalePriceRow } from "@/lib/query-types";
+export default async function AdminProductsPage() {
+  const { supabase } = await requireAdmin();
+  const [products, categories, brands] = await Promise.all([
+    supabase!.from("products").select("id,name,description,sku,slug,category_id,brand_id,minimum_wholesale_quantity,retail_price,sale_price,is_active,inventory(quantity_available),product_variants(id,name,sku,options,price_modifier,is_active,inventory(quantity_available))").order("created_at", { ascending: false }).limit(100),
+    supabase!.from("categories").select("id,name").eq("is_active", true).order("sort_order"),
+    supabase!.from("brands").select("id,name").eq("is_active", true).order("name"),
+  ]);
+  const { data: wholesaleData } = await supabase!.rpc("admin_product_wholesale_prices");
+  const wholesale = wholesaleData as unknown as WholesalePriceRow[] | null;
+  const productRows = products.data as unknown as AdminProductRow[] | null;
+  const wholesalePrices = new Map<string, number | null>((wholesale || []).map((row) => [row.product_id, row.wholesale_price === null ? null : Number(row.wholesale_price)]));
+  return <div className="admin-content"><div className="admin-page-heading"><div><span className="eyebrow">الكتالوج</span><h1>المنتجات</h1><p>إضافة وإدارة المنتجات والأسعار والمخزون.</p></div></div><div className="admin-panel admin-form-panel"><AdminProductForm categories={categories.data || []} brands={brands.data || []} /></div><section className="admin-panel recent-panel"><div className="admin-panel-heading"><div><h2>قائمة المنتجات</h2><p>{productRows?.length ?? 0} منتج</p></div></div><div className="admin-table-wrap"><table className="admin-table"><thead><tr><th>المنتج</th><th>SKU</th><th>سعر التجزئة</th><th>المخزون</th><th>الحالة</th><th>إدارة</th></tr></thead><tbody>{productRows?.map((product) => { const inventory = Array.isArray(product.inventory) ? product.inventory[0] : product.inventory; const variants = (product.product_variants || []).map((variant) => { const variantInventory = Array.isArray(variant.inventory) ? variant.inventory[0] : variant.inventory; return { id: variant.id, name: variant.name, sku: variant.sku, options: variant.options || {}, priceModifier: Number(variant.price_modifier), stock: variantInventory?.quantity_available ?? 0 }; }); return <tr key={product.id}><td><b>{product.name}</b><small className="table-subline">{product.slug}</small></td><td dir="ltr">{product.sku}</td><td>{formatPrice(Number(product.sale_price ?? product.retail_price))}</td><td>{inventory?.quantity_available ?? 0}</td><td><span className={"status-pill " + (product.is_active ? "status-delivered" : "status-cancelled")}>{product.is_active ? "نشط" : "غير نشط"}</span></td><td><AdminProductActions product={{ id: product.id, name: product.name, description: product.description, slug: product.slug, sku: product.sku, category_id: product.category_id, brand_id: product.brand_id, minimum_wholesale_quantity: product.minimum_wholesale_quantity, variants, is_active: product.is_active, retail_price: Number(product.retail_price), sale_price: product.sale_price === null ? null : Number(product.sale_price), wholesale_price: wholesalePrices.get(product.id) ?? null }} categories={categories.data || []} brands={brands.data || []} /></td></tr>; })}</tbody></table>{!productRows?.length && <div className="admin-empty">لا توجد منتجات بعد. أضيفي أول منتج من النموذج أعلاه.</div>}</div></section></div>;
+}
