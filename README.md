@@ -48,6 +48,21 @@ npm audit
 
 Supabase’s official [Next.js quickstart](https://supabase.com/docs/guides/getting-started/quickstarts/nextjs) and [SSR client guide](https://supabase.com/docs/guides/auth/server-side/creating-a-client) describe the cookie-backed session setup used here.
 
+## Cloudflare Workers deployment
+
+This project includes an OpenNext adapter configuration for Cloudflare Workers. The `WORKER_SELF_REFERENCE` service name in `wrangler.jsonc` must stay identical to the Worker `name`; changing one requires changing the other.
+
+For Cloudflare Workers Builds, use:
+
+- Production branch: `main`
+- Build command: `npx opennextjs-cloudflare build`
+- Deploy command: `npx opennextjs-cloudflare deploy`
+- Root directory: `/`
+
+Add `NEXT_PUBLIC_SUPABASE_URL` and `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY` to the Worker build/runtime environment settings using the values from the Supabase project. Add `NEXT_PUBLIC_SITE_URL` with the deployed `workers.dev` URL. These Supabase URL/publishable-key values are intended for browser use and RLS protects the database; never add a Supabase service-role key to this application. Keep `.env.local` and `.dev.vars` out of Git.
+
+The OpenNext adapter currently warns that local Windows support is incomplete; the Cloudflare build environment runs Linux. The original Netlify deployment remains independent. Test the Cloudflare preview and production URL from both Wi-Fi and mobile data before sharing it as the store link. Cloudflare's current recommended Next.js path, vinext, is still marked beta; this project instead uses the OpenNext adapter that successfully built the application in the Cloudflare deployment log.
+
 ## Create the first administrator
 
 1. Register a normal account through /register and complete email confirmation if enabled.

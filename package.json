@@ -6,11 +6,15 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
+    "preview": "opennextjs-cloudflare build && opennextjs-cloudflare preview",
+    "deploy": "opennextjs-cloudflare build && opennextjs-cloudflare deploy",
+    "cf-typegen": "wrangler types --env-interface CloudflareEnv cloudflare-env.d.ts",
     "lint": "eslint app components lib proxy.ts next.config.ts eslint.config.mjs postcss.config.mjs",
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
     "@hookform/resolvers": "7.0.1",
+    "@opennextjs/cloudflare": "^1.20.15",
     "@supabase/ssr": "0.12.7",
     "@supabase/supabase-js": "2.118.0",
     "lucide-react": "1.66.0",
@@ -29,10 +33,12 @@
     "eslint": "10.14.0",
     "eslint-plugin-react-hooks": "7.1.1",
     "tailwindcss": "4.3.3",
+    "typescript": "5.9.3",
     "typescript-eslint": "8.72.1",
-    "typescript": "5.9.3"
+    "wrangler": "^4.156.2"
   },
   "overrides": {
+    "glob": "14.0.2",
     "minimatch": "11.0.1"
   }
 }
