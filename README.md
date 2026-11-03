@@ -43,7 +43,10 @@ npm audit
    The publishable/anon key is designed for browser use and is protected by RLS. Never set the service-role key as a NEXT_PUBLIC_ variable. The application does not use a service-role key.
 
 3. In the Supabase SQL Editor, run supabase/migrations/0001_velora_platform.sql, then supabase/seed.sql for the sample catalog. The migration creates the tables, indexes, signup trigger, checkout and admin RPCs, RLS policies, and public image buckets with admin-only upload/update/delete rules.
-4. In Supabase Authentication settings, enable the desired email confirmation flow and add http://localhost:3000/** as a local redirect URL. Add the production origin before deployment.
+4. In Supabase Authentication > URL Configuration, set Site URL to the production store origin (`https://project-velora-full-e-commerce-platform.tha950130.workers.dev`). Add these Redirect URLs:
+   - `https://project-velora-full-e-commerce-platform.tha950130.workers.dev/auth/callback`
+   - `http://localhost:3000/auth/callback`
+   The registration form sends confirmation emails to `/auth/callback`, which exchanges the Supabase PKCE code for a secure session cookie.
 5. Restart npm run dev after changing environment values.
 
 Supabase’s official [Next.js quickstart](https://supabase.com/docs/guides/getting-started/quickstarts/nextjs) and [SSR client guide](https://supabase.com/docs/guides/auth/server-side/creating-a-client) describe the cookie-backed session setup used here.
@@ -59,7 +62,7 @@ For Cloudflare Workers Builds, use:
 - Deploy command: `npx opennextjs-cloudflare deploy`
 - Root directory: `/`
 
-Add `NEXT_PUBLIC_SUPABASE_URL` and `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY` to the Worker build/runtime environment settings using the values from the Supabase project. Add `NEXT_PUBLIC_SITE_URL` with the deployed `workers.dev` URL. These Supabase URL/publishable-key values are intended for browser use and RLS protects the database; never add a Supabase service-role key to this application. Keep `.env.local` and `.dev.vars` out of Git.
+Add `NEXT_PUBLIC_SUPABASE_URL` and `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY` to the Worker build/runtime environment settings using the values from the Supabase project. In Supabase Authentication > URL Configuration, use the deployed `workers.dev` origin as Site URL and allow the exact `/auth/callback` URL documented above. These Supabase URL/publishable-key values are intended for browser use and RLS protects the database; never add a Supabase service-role key to this application. Keep `.env.local` and `.dev.vars` out of Git.
 
 The OpenNext adapter currently warns that local Windows support is incomplete; the Cloudflare build environment runs Linux. The original Netlify deployment remains independent. Test the Cloudflare preview and production URL from both Wi-Fi and mobile data before sharing it as the store link. Cloudflare's current recommended Next.js path, vinext, is still marked beta; this project instead uses the OpenNext adapter that successfully built the application in the Cloudflare deployment log.
 

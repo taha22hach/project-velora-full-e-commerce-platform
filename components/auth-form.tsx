@@ -12,9 +12,9 @@ const loginSchema = z.object({ email: z.email("أدخلي بريداً إلكت�
 const registerSchema = loginSchema.extend({ fullName: z.string().min(2, "الاسم مطلوب"), phone: z.string().min(8, "أدخلي رقم هاتف صحيحاً") });
 type AuthValues = z.infer<typeof registerSchema>;
 
-export function AuthForm({ mode }: { mode: "login" | "register" }) {
+export function AuthForm({ mode, initialMessage = "" }: { mode: "login" | "register"; initialMessage?: string }) {
   const router = useRouter();
-  const [message, setMessage] = useState("");
+  const [message, setMessage] = useState(initialMessage);
   const [busy, setBusy] = useState(false);
   const schema = mode === "login" ? loginSchema : registerSchema;
   const form = useForm<AuthValues>({ resolver: zodResolver(schema) as unknown as Resolver<AuthValues>, defaultValues: { email: "", password: "", fullName: "", phone: "" } });
@@ -41,10 +41,13 @@ export function AuthForm({ mode }: { mode: "login" | "register" }) {
       const { error } = await supabase.auth.signUp({
         email: values.email,
         password: values.password,
-        options: { data: { full_name: values.fullName, phone: values.phone } },
+        options: {
+          emailRedirectTo: `${window.location.origin}/auth/callback`,
+          data: { full_name: values.fullName, phone: values.phone },
+        },
       });
       if (error) setMessage(error.message);
-      else setMessage("تم إنشاء حسابك. إذا كان تأكيد البريد مفعلاً، راجعي بريدك لإكمال التسجيل.");
+      else setMessage("تم إنشاء حسابك. راجعي بريدك واضغطي رابط التفعيل لإكمال التسجيل.");
     }
     setBusy(false);
   }
