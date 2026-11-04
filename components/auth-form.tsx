@@ -56,6 +56,7 @@ export function AuthForm({ mode, initialMessage = "" }: { mode: "login" | "regis
     {mode === "register" && <><label>الاسم الكامل<input autoComplete="name" {...register("fullName")} placeholder="اسمك كما تحبين" />{errors.fullName && <small>{errors.fullName.message}</small>}</label><label>رقم الهاتف<input autoComplete="tel" {...register("phone")} placeholder="01XXXXXXXXX" dir="ltr" />{errors.phone && <small>{errors.phone.message}</small>}</label></>}
     <label>البريد الإلكتروني<input autoComplete="email" type="email" {...register("email")} placeholder="name@example.com" dir="ltr" />{errors.email && <small>{errors.email.message}</small>}</label>
     <label>كلمة المرور<input autoComplete={mode === "login" ? "current-password" : "new-password"} type="password" {...register("password")} placeholder="٨ أحرف على الأقل" dir="ltr" />{errors.password && <small>{errors.password.message}</small>}</label>
+    {mode === "login" && <p className="auth-switch"><Link href="/forgot-password">نسيت كلمة المرور؟</Link></p>}
     {message && <p className="form-message" role="status">{message}</p>}
     <button className="button button-primary button-wide" disabled={busy}>{busy ? "جارٍ الإرسال..." : mode === "login" ? "تسجيل الدخول" : "إنشاء حسابي"}</button>
     <p className="auth-switch">{mode === "login" ? "ليس لديك حساب؟ " : "لديك حساب بالفعل؟ "}<Link href={mode === "login" ? "/register" : "/login"}>{mode === "login" ? "أنشئي حساباً" : "سجّلي الدخول"}</Link></p>
