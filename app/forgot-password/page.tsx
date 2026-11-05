@@ -23,9 +23,9 @@ export default function ForgotPasswordPage() {
       return;
     }
 
-    const { error } = await supabase.auth.resetPasswordForEmail(email, {
-      redirectTo: `${window.location.origin}/reset-password`,
-    });
+      const { error } = await supabase.auth.resetPasswordForEmail(email, {
+      redirectTo: "https://velora.tha950130.workers.dev/reset-password",
+      });
 
     if (error) {
       setMessage("تعذر إرسال الرابط. تأكدي من البريد الإلكتروني وحاولي مرة أخرى.");
