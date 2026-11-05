@@ -1,6 +1,6 @@
 {
   "$schema": "./node_modules/wrangler/config-schema.json",
-  "name": "project-velora-full-e-commerce-platform",
+  "name": "velora",
   "main": ".open-next/worker.js",
   "compatibility_date": "2026-11-02",
   "compatibility_flags": ["nodejs_compat"],
@@ -12,7 +12,7 @@
   "services": [
     {
       "binding": "WORKER_SELF_REFERENCE",
-      "service": "project-velora-full-e-commerce-platform"
+      "service": "velora"
     }
   ],
   "observability": {
