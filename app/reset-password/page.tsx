@@ -37,7 +37,7 @@ export default function ResetPasswordPage() {
       const { error } = await supabase.auth.updateUser({ password });
 
       if (error) {
-        setMessage("تعذر تغيير كلمة المرور. افتحي رابط الاستعادة من بريدك الإلكتروني مرة أخرى.");
+        setMessage(`خطأ من Supabase: ${error.message}`);
       } else {
         setMessage("تم تغيير كلمة المرور بنجاح. يمكنك تسجيل الدخول الآن.");
       }
