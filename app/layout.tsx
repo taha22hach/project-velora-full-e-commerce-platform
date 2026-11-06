@@ -9,8 +9,10 @@ export const metadata: Metadata = {
   title: { default: "VELORA | جمالك، أسلوبك، اختيارك", template: "%s | VELORA" },
   description: "تسوقي منتجات الجمال والعناية والأزياء والإكسسوارات المختارة بعناية من VELORA.",
   applicationName: "VELORA",
+  verification: {
+    google: "uaRxhXGLws75MLxKuv8Vhpl_3m3280rSjMv2j1en4UE",
+  },
 };
-
 export const dynamic = "force-dynamic";
 
 export const viewport: Viewport = {
