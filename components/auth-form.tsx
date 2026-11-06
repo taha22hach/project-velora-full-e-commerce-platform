@@ -8,8 +8,8 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm, type Resolver } from "react-hook-form";
 import { createClient } from "@/lib/supabase/client";
 
-const loginSchema = z.object({ email: z.email("أدخلي بريداً إلكترونياً صحيحاً"), password: z.string().min(8, "كلمة المرور ٨ أحرف على الأقل") });
-const registerSchema = loginSchema.extend({ fullName: z.string().min(2, "الاسم مطلوب"), phone: z.string().min(8, "أدخلي رقم هاتف صحيحاً") });
+const loginSchema = z.object({ email: z.email("أدخل بريداً إلكترونياً صحيحاً"), password: z.string().min(8, "كلمة المرور ٨ أحرف على الأقل") });
+const registerSchema = loginSchema.extend({ fullName: z.string().min(2, "الاسم مطلوب"), phone: z.string().min(8, "أدخل رقم هاتف صحيحاً") });
 type AuthValues = z.infer<typeof registerSchema>;
 
 export function AuthForm({ mode, initialMessage = "" }: { mode: "login" | "register"; initialMessage?: string }) {
@@ -25,18 +25,44 @@ export function AuthForm({ mode, initialMessage = "" }: { mode: "login" | "regis
     setMessage("");
     const supabase = createClient();
     if (!supabase) {
-      setMessage("لإدارة الحسابات بأمان، أضيفي إعدادات Supabase في ملف .env.local ثم أعيدي تشغيل التطبيق.");
+      setMessage("لإدارة الحسابات بأمان، أضيف إعدادات Supabase في ملف .env.local ثم أعيد تشغيل التطبيق.");
       setBusy(false);
       return;
     }
     if (mode === "login") {
-      const { error } = await supabase.auth.signInWithPassword({ email: values.email, password: values.password });
-      if (error) setMessage("تعذر تسجيل الدخول. تحققي من البريد وكلمة المرور.");
-      else {
-        const candidate = new URLSearchParams(window.location.search).get("next");
-        const nextPath = candidate?.startsWith("/") && !candidate.startsWith("//") ? candidate : "/account";
-        router.push(nextPath);
-      }
+const { data: authData, error } = await supabase.auth.signInWithPassword({
+  email: values.email,
+  password: values.password,
+});
+
+if (error) {
+  setMessage("تعذر تسجيل الدخول. تحققي من البريد وكلمة المرور.");
+} else {
+  const { data: profile, error: profileError } = await supabase
+    .from("profiles")
+    .select("role, is_active")
+    .eq("id", authData.user.id)
+    .maybeSingle();
+
+  if (profileError || !profile) {
+    await supabase.auth.signOut();
+    setMessage("تعذر التحقق من صلاحيات الحساب. تواصلي مع الإدارة.");
+  } else if (profile.is_active === false) {
+    await supabase.auth.signOut();
+    setMessage("هذا الحساب غير نشط. تواصلي مع الإدارة.");
+  } else {
+    const candidate = new URLSearchParams(window.location.search).get("next");
+
+    const nextPath =
+      candidate?.startsWith("/") && !candidate.startsWith("//")
+        ? candidate
+        : profile.role === "admin"
+          ? "/admin"
+          : "/account";
+
+    router.push(nextPath);
+  }
+}
     } else {
       const { error } = await supabase.auth.signUp({
         email: values.email,
@@ -47,7 +73,7 @@ export function AuthForm({ mode, initialMessage = "" }: { mode: "login" | "regis
         },
       });
       if (error) setMessage(error.message);
-      else setMessage("تم إنشاء حسابك. راجعي بريدك واضغطي رابط التفعيل لإكمال التسجيل.");
+      else setMessage("تم إنشاء حسابك. راجع بريدك واضغط رابط التفعيل لإكمال التسجيل.");
     }
     setBusy(false);
   }
@@ -59,6 +85,6 @@ export function AuthForm({ mode, initialMessage = "" }: { mode: "login" | "regis
     {mode === "login" && <p className="auth-switch"><Link href="/forgot-password">نسيت كلمة المرور؟</Link></p>}
     {message && <p className="form-message" role="status">{message}</p>}
     <button className="button button-primary button-wide" disabled={busy}>{busy ? "جارٍ الإرسال..." : mode === "login" ? "تسجيل الدخول" : "إنشاء حسابي"}</button>
-    <p className="auth-switch">{mode === "login" ? "ليس لديك حساب؟ " : "لديك حساب بالفعل؟ "}<Link href={mode === "login" ? "/register" : "/login"}>{mode === "login" ? "أنشئي حساباً" : "سجّلي الدخول"}</Link></p>
+    <p className="auth-switch">{mode === "login" ? "ليس لديك حساب؟ " : "لديك حساب بالفعل؟ "}<Link href={mode === "login" ? "/register" : "/login"}>{mode === "login" ? "أنشئ حساباً" : "سجّلي الدخول"}</Link></p>
   </form>;
 }
