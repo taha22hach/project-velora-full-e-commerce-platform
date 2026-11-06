@@ -32,7 +32,15 @@ export type OrderSummaryRow = {
   status: OrderStatus;
   total_amount: number | string;
   created_at: string;
-  profiles?: Relation<{ full_name: string | null; email: string | null }>;
+  profiles?: Relation<{ full_name: string | null; email: string | null; phone?: string | null }>;
+  addresses?: Relation<{
+    recipient_name: string | null;
+    phone: string | null;
+    governorate: string | null;
+    city: string | null;
+    area: string | null;
+    street: string | null;
+  }>;
   order_items?: { id: string }[] | null;
 };
 

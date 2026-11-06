@@ -40,14 +40,15 @@ npm audit
    NEXT_PUBLIC_SITE_URL=http://localhost:3000
    ~~~
 
-   The publishable/anon key is designed for browser use and is protected by RLS. Never set the service-role key as a NEXT_PUBLIC_ variable. The application does not use a service-role key.
+   The publishable/anon key is designed for browser use and is protected by RLS. Guest checkout also needs `SUPABASE_SECRET_KEY` (or the legacy `SUPABASE_SERVICE_ROLE_KEY`) as a server-only runtime secret. It is used only by checkout and confirmation server routes; never name it with a `NEXT_PUBLIC_` prefix, send it to the browser, or commit its value.
 
-3. In the Supabase SQL Editor, run supabase/migrations/0001_velora_platform.sql, then supabase/seed.sql for the sample catalog. The migration creates the tables, indexes, signup trigger, checkout and admin RPCs, RLS policies, and public image buckets with admin-only upload/update/delete rules.
-4. In Supabase Authentication > URL Configuration, set Site URL to the production store origin (`https://project-velora-full-e-commerce-platform.tha950130.workers.dev`). Add these Redirect URLs:
-   - `https://project-velora-full-e-commerce-platform.tha950130.workers.dev/auth/callback`
+3. In the Supabase SQL Editor, run migrations in numeric order (`0001_velora_platform.sql`, then `0002_guest_checkout.sql`), then run `supabase/seed.sql` if you need the sample catalog. Review and approve migrations before applying them to production.
+4. In Supabase Authentication > URL Configuration, set Site URL to the production store origin (`https://velora.tha950130.workers.dev`). Add these Redirect URLs:
+   - `https://velora.tha950130.workers.dev/auth/callback`
    - `http://localhost:3000/auth/callback`
-   The registration form sends confirmation emails to `/auth/callback`, which exchanges the Supabase PKCE code for a secure session cookie.
-5. Restart npm run dev after changing environment values.
+   The callback exchanges a Supabase PKCE code for a secure session cookie.
+5. In Supabase Authentication > Sign In / Providers > Email, turn off **Allow new users to sign up** to block direct Supabase Auth signups. The application registration page is disabled too, but that page alone cannot disable Supabase's Auth API.
+6. Restart npm run dev after changing environment values.
 
 Supabase’s official [Next.js quickstart](https://supabase.com/docs/guides/getting-started/quickstarts/nextjs) and [SSR client guide](https://supabase.com/docs/guides/auth/server-side/creating-a-client) describe the cookie-backed session setup used here.
 
@@ -62,13 +63,13 @@ For Cloudflare Workers Builds, use:
 - Deploy command: `npx opennextjs-cloudflare deploy`
 - Root directory: `/`
 
-Add `NEXT_PUBLIC_SUPABASE_URL` and `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY` to the Worker build/runtime environment settings using the values from the Supabase project. In Supabase Authentication > URL Configuration, use the deployed `workers.dev` origin as Site URL and allow the exact `/auth/callback` URL documented above. These Supabase URL/publishable-key values are intended for browser use and RLS protects the database; never add a Supabase service-role key to this application. Keep `.env.local` and `.dev.vars` out of Git.
+Add `NEXT_PUBLIC_SUPABASE_URL` and `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY` to the Worker build/runtime environment settings using the values from the Supabase project. Add `SUPABASE_SECRET_KEY` (or the legacy `SUPABASE_SERVICE_ROLE_KEY`) as a Cloudflare Worker secret for server runtime use. In Supabase Authentication > URL Configuration, use the deployed `workers.dev` origin as Site URL and allow the exact `/auth/callback` URL documented above. The URL/publishable key are intended for browser use and RLS protects direct database access; the server secret must remain server-only. Keep `.env.local` and `.dev.vars` out of Git.
 
 The OpenNext adapter currently warns that local Windows support is incomplete; the Cloudflare build environment runs Linux. The original Netlify deployment remains independent. Test the Cloudflare preview and production URL from both Wi-Fi and mobile data before sharing it as the store link. Cloudflare's current recommended Next.js path, vinext, is still marked beta; this project instead uses the OpenNext adapter that successfully built the application in the Cloudflare deployment log.
 
 ## Create the first administrator
 
-1. Register a normal account through /register and complete email confirmation if enabled.
+1. From Supabase Authentication, send an invitation to the administrator's email address and complete the invitation. Public registration is disabled in the application and should also be disabled in Supabase Auth settings.
 2. As the Supabase project owner, open the SQL Editor and run this trusted administrative statement with the account’s exact email:
 
    ~~~sql
@@ -92,10 +93,10 @@ The browser has no privilege to change role or is_active. Do not expose SQL edit
 - Server operations use the authenticated Supabase session and verify the profile role; RLS remains the data boundary for direct Supabase access.
 - Checkout sends product IDs and quantities only. PostgreSQL reloads prices, checks merchant approval, applies coupons and shipping, locks stock rows, rejects overselling, records movements, creates the COD payment record, and writes the order in one transaction.
 - Wholesale pricing is omitted from normal product column grants. The database returns it only to an approved merchant through a role-checked RPC.
-- Registration creates customer accounts only. Assigning an administrator role is a trusted SQL-editor operation.
+- Public registration is disabled in the application. The Supabase Auth signup setting must also be turned off in the dashboard; existing users and administrators can continue to sign in.
 - Uploads use Supabase Storage with image MIME and size limits; public reads are enabled for product imagery, while writes and deletions require an active admin profile.
 - Online payment is intentionally unavailable until a supported payment provider is integrated. No card data is collected or stored. Cash on delivery is the only accepted method.
-- Checkout has both an in-process request limiter and a database-side per-user order limit. The in-process limiter is best-effort in multi-instance/serverless hosting; use a shared edge limiter for a high-traffic production deployment.
+- Signed-in checkout has an in-process request limiter and a database-side per-user order limit. Guest checkout uses an atomic, persistent database rate limit keyed by a server-derived, secret-keyed Cloudflare network hash. Coupon limits for guests use the same hash, so changing a phone number does not reset them.
 - Change the seeded contact details, social URLs, free-shipping threshold, product copy, product images, and legal policies before launch. The sample imagery is illustrative.
 - The sample demo catalog and local-storage cart do not create real orders. A configured Supabase database is required for purchase and account workflows.
 

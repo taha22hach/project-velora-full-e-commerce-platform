@@ -8,7 +8,7 @@ export default async function AdminOrdersPage() {
   const { data: rawOrders, error } = await supabase!
     .from("orders")
     .select(
-      "id,order_number,status,total_amount,created_at,profiles(full_name,email),addresses(recipient_name,phone,city,area),order_items(id)"
+      "id,order_number,status,total_amount,created_at,profiles(full_name,email,phone),addresses(recipient_name,phone,governorate,city,area,street),order_items(id)"
     )
     .order("created_at", { ascending: false })
     .limit(100);
