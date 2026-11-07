@@ -59,10 +59,10 @@ This project includes an OpenNext adapter configuration for Cloudflare Workers. 
 For Cloudflare Workers Builds, use:
 
 - Production branch: `main`
-- Build command: `npx opennextjs-cloudflare build`
-- Deploy command: `npx opennextjs-cloudflare deploy`
+- Build command: `npx @opennextjs/cloudflare build`
+- Deploy command: `npx @opennextjs/cloudflare deploy`
 - Root directory: `/`
-- Preview branch build command: `npx opennextjs-cloudflare build`
+- Preview branch build command: `npx @opennextjs/cloudflare build`
 - Preview command: `npx wrangler preview`
 
 The OpenNext build command must run before either deploy command: `npm run build` alone only creates Next.js output and does not generate `.open-next/worker.js`. Keep the `previews` block in `wrangler.jsonc` so Wrangler can create preview deployments.
