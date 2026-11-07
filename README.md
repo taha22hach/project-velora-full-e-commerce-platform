@@ -66,6 +66,7 @@ For Cloudflare Workers Builds, use:
 - Preview command: `npx wrangler preview`
 
 The OpenNext build command must run before either deploy command: `npm run build` alone only creates Next.js output and does not generate `.open-next/worker.js`. Keep the `previews` block in `wrangler.jsonc` so Wrangler can create preview deployments.
+After changing the Cloudflare Build settings, push a new commit to the pull request branch to start a fresh preview build with those settings.
 
 Add `NEXT_PUBLIC_SUPABASE_URL` and `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY` to the Worker build/runtime environment settings using the values from the Supabase project. Add `SUPABASE_SECRET_KEY` (or the legacy `SUPABASE_SERVICE_ROLE_KEY`) as a Cloudflare Worker secret for server runtime use. In Supabase Authentication > URL Configuration, use the deployed `workers.dev` origin as Site URL and allow the exact `/auth/callback` URL documented above. The URL/publishable key are intended for browser use and RLS protects direct database access; the server secret must remain server-only. Keep `.env.local` and `.dev.vars` out of Git.
 
